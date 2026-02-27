@@ -37,7 +37,8 @@ function App() {
     if (node && !initialScrollDone.current) {
       initialScrollDone.current = true
       requestAnimationFrame(() => {
-        node.scrollIntoView({ behavior: 'instant' })
+        const container = node.parentElement
+        if (container) container.scrollTop = container.scrollHeight
       })
     }
   }, [])
@@ -70,7 +71,8 @@ function App() {
   // novas mensagens: scroll suave + salvar localStorage
   useEffect(() => {
     if (initialScrollDone.current && chatEndRef.current) {
-      chatEndRef.current.scrollIntoView({ behavior: 'smooth' })
+      const container = chatEndRef.current.parentElement
+      if (container) container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' })
     }
     try {
       const trimmed = messages.slice(-50)
