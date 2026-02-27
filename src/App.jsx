@@ -30,6 +30,7 @@ function App() {
   const animFrameRef = useRef(null)
   const chatEndRef = useRef(null)
   const cancelledRef = useRef(false)
+  const initialScrollRef = useRef(true)
 
   useEffect(() => {
     const handler = (e) => {
@@ -58,7 +59,9 @@ function App() {
 
   useEffect(() => {
     if (chatEndRef.current) {
-      chatEndRef.current.scrollIntoView({ behavior: 'smooth' })
+      const behavior = initialScrollRef.current ? 'instant' : 'smooth'
+      chatEndRef.current.scrollIntoView({ behavior })
+      initialScrollRef.current = false
     }
     try {
       const trimmed = messages.slice(-50)
