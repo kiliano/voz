@@ -28,7 +28,7 @@ function apiMiddleware() {
 
         let body = ''
         for await (const chunk of req) body += chunk
-        const { audio, mimeType } = JSON.parse(body)
+        const { audio, mimeType, sampleRate } = JSON.parse(body)
 
         if (!audio) {
           res.statusCode = 400
@@ -37,17 +37,20 @@ function apiMiddleware() {
         }
 
         const encoding = mimeType?.includes('ogg') ? 'OGG_OPUS' : 'WEBM_OPUS'
+        const config = {
+          encoding,
+          languageCode: 'pt-BR',
+          enableAutomaticPunctuation: true,
+          model: 'latest_long',
+        }
+        if (sampleRate) config.sampleRateHertz = sampleRate
 
         try {
           const response = await fetch(`${GOOGLE_API_URL}?key=${apiKey}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              config: {
-                encoding,
-                languageCode: 'pt-BR',
-                enableAutomaticPunctuation: true,
-              },
+              config,
               audio: { content: audio },
             }),
           })

@@ -165,7 +165,7 @@ function App() {
           const res = await fetch('/api/transcribe', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ audio: base64, mimeType: blob.type }),
+            body: JSON.stringify({ audio: base64, mimeType: blob.type, sampleRate: blob._sampleRate }),
           })
 
           const data = await res.json()
@@ -231,6 +231,8 @@ function App() {
         if (e.data.size > 0) audioChunks.current.push(e.data)
       }
 
+      const recSampleRate = audioCtx.sampleRate
+
       recorder.onstop = () => {
         stream.getTracks().forEach(t => t.stop())
         stopWaveform()
@@ -240,6 +242,7 @@ function App() {
         }
         if (!cancelledRef.current) {
           const blob = new Blob(audioChunks.current, { type: recorder.mimeType })
+          blob._sampleRate = recSampleRate
           sendAudio(blob)
         }
       }
