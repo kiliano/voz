@@ -3,7 +3,9 @@
     "allow": [
       "Bash(npm install)",
       "mcp__Claude_Preview__preview_start",
-      "Bash(where.exe node)"
+      "Bash(where.exe node)",
+      "Bash(node -e \":*)",
+      "Bash(npm install --save-dev sharp)"
     ]
   }
 }
