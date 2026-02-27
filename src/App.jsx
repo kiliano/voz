@@ -34,6 +34,10 @@ function App() {
   }, [])
 
   useEffect(() => {
+    if (!navigator.permissions || !navigator.permissions.query) {
+      setChecking(false)
+      return
+    }
     navigator.permissions.query({ name: 'microphone' }).then((result) => {
       setMicAllowed(result.state === 'granted')
       setChecking(false)
@@ -50,12 +54,6 @@ function App() {
       chatEndRef.current.scrollIntoView({ behavior: 'smooth' })
     }
   }, [messages])
-
-  useEffect(() => {
-    if (listening && analyserRef.current) {
-      drawWaveform()
-    }
-  }, [listening, drawWaveform])
 
   const requestMic = useCallback(async () => {
     try {
@@ -112,6 +110,12 @@ function App() {
 
     draw()
   }, [])
+
+  useEffect(() => {
+    if (listening && analyserRef.current) {
+      drawWaveform()
+    }
+  }, [listening, drawWaveform])
 
   const stopWaveform = useCallback(() => {
     if (animFrameRef.current) {
