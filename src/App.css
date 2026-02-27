@@ -5,15 +5,9 @@
 }
 
 html, body, #root {
+  height: 100vh;
   height: 100dvh;
-  height: 100vh; /* fallback para navegadores antigos */
   overflow: hidden;
-}
-
-@supports (height: 100dvh) {
-  html, body, #root {
-    height: 100dvh;
-  }
 }
 
 body {
@@ -122,6 +116,8 @@ body::before {
   padding: 16px 20px;
   line-height: 1.7;
   font-size: 15px;
+  white-space: pre-wrap;
+  word-break: break-word;
   cursor: pointer;
   position: relative;
   transition: border-color 0.3s ease;

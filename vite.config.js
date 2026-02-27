@@ -58,7 +58,7 @@ function apiMiddleware() {
           if (!response.ok) {
             console.error('Google API error:', data)
             res.statusCode = 502
-            res.end(JSON.stringify({ error: 'Erro na transcrição', details: data.error?.message }))
+            res.end(JSON.stringify({ error: 'Erro na transcrição', google: data }))
             return
           }
 

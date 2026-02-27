@@ -26,6 +26,7 @@ function App() {
   const intervalRef = useRef(null)
   const streamRef = useRef(null)
   const analyserRef = useRef(null)
+  const audioCtxRef = useRef(null)
   const canvasRef = useRef(null)
   const animFrameRef = useRef(null)
   const chatEndRef = useRef(null)
@@ -157,26 +158,46 @@ function App() {
         reader.readAsDataURL(blob)
       })
 
-      const res = await fetch('/api/transcribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ audio: base64 }),
-      })
+      const maxRetries = 3
+      let lastError = null
 
-      const data = await res.json()
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          const res = await fetch('/api/transcribe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ audio: base64 }),
+          })
 
-      if (!res.ok) {
-        setError(data.error || 'Erro ao transcrever')
-        return
+          const data = await res.json()
+
+          if (!res.ok) {
+            lastError = `Erro ${res.status}:\n${JSON.stringify(data, null, 2)}`
+            if (attempt < maxRetries) {
+              await new Promise(r => setTimeout(r, 1500 * attempt))
+              continue
+            }
+            setMessages(prev => [...prev, { id: Date.now(), text: `⚠ ${lastError}\n(${maxRetries} tentativas)` }])
+            return
+          }
+
+          if (data.transcript) {
+            setMessages(prev => [...prev, { id: Date.now(), text: data.transcript }])
+          } else {
+            setMessages(prev => [...prev, { id: Date.now(), text: `⚠ Nenhuma fala detectada.\n${JSON.stringify(data, null, 2)}` }])
+          }
+          return
+        } catch (err) {
+          lastError = `Erro de conexão:\n${err.message}`
+          if (attempt < maxRetries) {
+            await new Promise(r => setTimeout(r, 1500 * attempt))
+            continue
+          }
+          setMessages(prev => [...prev, { id: Date.now(), text: `⚠ ${lastError}\n(${maxRetries} tentativas)` }])
+        }
       }
-
-      if (data.transcript) {
-        setMessages(prev => [...prev, { id: Date.now(), text: data.transcript }])
-      } else {
-        setError('Nenhuma fala detectada. Tente novamente.')
-      }
-    } catch {
-      setError('Erro de conexão. Tente novamente.')
+    } catch (err) {
+      setMessages(prev => [...prev, { id: Date.now(), text: `⚠ Erro ao processar áudio:\n${err.message}` }])
     } finally {
       setProcessing(false)
     }
@@ -193,7 +214,9 @@ function App() {
       streamRef.current = stream
 
       // analyser pra waveform
+      if (audioCtxRef.current) audioCtxRef.current.close()
       const audioCtx = new AudioContext()
+      audioCtxRef.current = audioCtx
       const source = audioCtx.createMediaStreamSource(stream)
       const analyser = audioCtx.createAnalyser()
       analyser.fftSize = 256
@@ -210,6 +233,10 @@ function App() {
       recorder.onstop = () => {
         stream.getTracks().forEach(t => t.stop())
         stopWaveform()
+        if (audioCtxRef.current) {
+          audioCtxRef.current.close()
+          audioCtxRef.current = null
+        }
         if (!cancelledRef.current) {
           const blob = new Blob(audioChunks.current, { type: 'audio/webm;codecs=opus' })
           sendAudio(blob)
@@ -237,7 +264,7 @@ function App() {
     } catch {
       setError('Não foi possível iniciar a gravação.')
     }
-  }, [sendAudio, drawWaveform, stopWaveform])
+  }, [sendAudio, stopWaveform])
 
   const stopRecording = useCallback(() => {
     clearTimeout(timerRef.current)

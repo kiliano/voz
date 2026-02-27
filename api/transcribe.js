@@ -34,7 +34,7 @@ export default async function handler(req, res) {
 
     if (!response.ok) {
       console.error('Google API error:', data)
-      return res.status(502).json({ error: 'Erro na transcrição', details: data.error?.message })
+      return res.status(502).json({ error: 'Erro na transcrição', google: data })
     }
 
     const transcript = (data.results || [])
