@@ -51,6 +51,12 @@ function App() {
     }
   }, [messages])
 
+  useEffect(() => {
+    if (listening && analyserRef.current) {
+      drawWaveform()
+    }
+  }, [listening, drawWaveform])
+
   const requestMic = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
@@ -192,7 +198,6 @@ function App() {
       recorder.start()
       mediaRecorder.current = recorder
       setListening(true)
-      drawWaveform()
 
       // timer visual
       const startTime = Date.now()
