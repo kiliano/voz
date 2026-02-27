@@ -31,6 +31,7 @@ function App() {
   const chatEndRef = useRef(null)
   const cancelledRef = useRef(false)
   const initialScrollRef = useRef(true)
+  const scrollIntervalRef = useRef(null)
 
   useEffect(() => {
     const handler = (e) => {
@@ -57,24 +58,44 @@ function App() {
     })
   }, [])
 
+  // scroll inicial: interval que roda até a primeira interação
   useEffect(() => {
-    const scroll = () => {
-      if (chatEndRef.current) {
-        const behavior = initialScrollRef.current ? 'instant' : 'smooth'
-        chatEndRef.current.scrollIntoView({ behavior })
-        initialScrollRef.current = false
+    if (!initialScrollRef.current) return
+
+    const stopInitialScroll = () => {
+      initialScrollRef.current = false
+      if (scrollIntervalRef.current) {
+        clearInterval(scrollIntervalRef.current)
+        scrollIntervalRef.current = null
       }
+      window.removeEventListener('click', stopInitialScroll, true)
+      window.removeEventListener('touchstart', stopInitialScroll, true)
+      window.removeEventListener('scroll', stopInitialScroll, true)
     }
-    if (initialScrollRef.current) {
-      setTimeout(scroll, 100)
-    } else {
-      scroll()
+
+    scrollIntervalRef.current = setInterval(() => {
+      if (chatEndRef.current) {
+        chatEndRef.current.scrollIntoView({ behavior: 'instant' })
+      }
+    }, 80)
+
+    window.addEventListener('click', stopInitialScroll, true)
+    window.addEventListener('touchstart', stopInitialScroll, true)
+    window.addEventListener('scroll', stopInitialScroll, true)
+
+    return () => stopInitialScroll()
+  }, [micAllowed])
+
+  // novas mensagens: scroll suave + salvar localStorage
+  useEffect(() => {
+    if (!initialScrollRef.current && chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: 'smooth' })
     }
     try {
       const trimmed = messages.slice(-50)
       localStorage.setItem('fala_messages', JSON.stringify(trimmed))
     } catch { /* storage full */ }
-  }, [messages, micAllowed])
+  }, [messages])
 
   const requestMic = useCallback(async () => {
     try {
