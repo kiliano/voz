@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 
-const MAX_DURATION = 60_000
+const MAX_DURATION = 55_000
 
 function App() {
   const [micAllowed, setMicAllowed] = useState(false)
@@ -428,7 +428,7 @@ function App() {
             <div className="timer">
               <span className="timer-elapsed">{formatTime(elapsed)}</span>
               <span className="timer-separator">/</span>
-              <span className="timer-limit">1:00</span>
+              <span className="timer-limit">0:55</span>
             </div>
             <button className="stop-btn" onClick={stopRecording}>
               <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
