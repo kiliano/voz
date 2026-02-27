@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fala-lindona-v2'
+const CACHE_NAME = 'fala-lindona-v1.0'
 
 const PRECACHE = [
   '/',
@@ -8,6 +8,7 @@ const PRECACHE = [
   '/icon-512.png',
   '/icon-maskable-192.png',
   '/icon-maskable-512.png',
+  '/manifest.json',
 ]
 
 self.addEventListener('install', (e) => {
@@ -29,16 +30,67 @@ self.addEventListener('activate', (e) => {
 })
 
 self.addEventListener('fetch', (e) => {
-  if (e.request.url.includes('/api/')) return
+  const url = new URL(e.request.url)
 
+  // chamadas api: só rede, sem cache
+  if (url.pathname.startsWith('/api/')) return
+
+  // só cachear requests do mesmo origin
+  if (url.origin !== self.location.origin) return
+
+  // assets com hash no nome (ex: /assets/index-abc123.js)
+  // são imutáveis, cache-first puro
+  if (url.pathname.startsWith('/assets/')) {
+    e.respondWith(
+      caches.match(e.request).then((cached) => {
+        if (cached) return cached
+        return fetch(e.request).then((response) => {
+          if (response.ok) {
+            const clone = response.clone()
+            caches.open(CACHE_NAME).then((cache) => cache.put(e.request, clone))
+          }
+          return response
+        })
+      })
+    )
+    return
+  }
+
+  // imagens e fontes: cache-first
+  const dest = e.request.destination
+  if (dest === 'image' || dest === 'font') {
+    e.respondWith(
+      caches.match(e.request).then((cached) => {
+        if (cached) return cached
+        return fetch(e.request).then((response) => {
+          if (response.ok) {
+            const clone = response.clone()
+            caches.open(CACHE_NAME).then((cache) => cache.put(e.request, clone))
+          }
+          return response
+        })
+      })
+    )
+    return
+  }
+
+  // html e manifest: network-first com fallback pro cache
+  if (dest === 'document' || url.pathname === '/manifest.json') {
+    e.respondWith(
+      fetch(e.request).then((response) => {
+        if (response.ok) {
+          const clone = response.clone()
+          caches.open(CACHE_NAME).then((cache) => cache.put(e.request, clone))
+        }
+        return response
+      }).catch(() => caches.match(e.request))
+    )
+    return
+  }
+
+  // todo o resto (js, css, etc): stale-while-revalidate
   e.respondWith(
     caches.match(e.request).then((cached) => {
-      // imagens: cache first, não busca na rede se já tem
-      if (cached && e.request.destination === 'image') {
-        return cached
-      }
-
-      // resto: stale-while-revalidate
       const fetched = fetch(e.request).then((response) => {
         if (response.ok) {
           const clone = response.clone()

@@ -7,11 +7,18 @@ function App() {
   const [listening, setListening] = useState(false)
   const [checking, setChecking] = useState(true)
   const [processing, setProcessing] = useState(false)
-  const [messages, setMessages] = useState([])
+  const [messages, setMessages] = useState(() => {
+    try {
+      const saved = localStorage.getItem('fala_messages')
+      return saved ? JSON.parse(saved) : []
+    } catch { return [] }
+  })
   const [error, setError] = useState('')
   const [elapsed, setElapsed] = useState(0)
   const [copiedId, setCopiedId] = useState(null)
   const [installPrompt, setInstallPrompt] = useState(null)
+  const [showClearModal, setShowClearModal] = useState(false)
+  const [floatingHearts, setFloatingHearts] = useState([])
 
   const mediaRecorder = useRef(null)
   const audioChunks = useRef([])
@@ -53,6 +60,10 @@ function App() {
     if (chatEndRef.current) {
       chatEndRef.current.scrollIntoView({ behavior: 'smooth' })
     }
+    try {
+      const trimmed = messages.slice(-50)
+      localStorage.setItem('fala_messages', JSON.stringify(trimmed))
+    } catch { /* storage full */ }
   }, [messages])
 
   const requestMic = useCallback(async () => {
@@ -99,12 +110,17 @@ function App() {
       for (let i = 0; i < bufferLength; i++) {
         const v = dataArray[i] / 128.0
         const y = (v * h) / 2
-        if (i === 0) ctx.moveTo(x, y)
-        else ctx.lineTo(x, y)
+        if (i === 0) {
+          ctx.moveTo(x, y)
+        } else {
+          const prevV = dataArray[i - 1] / 128.0
+          const prevY = (prevV * h) / 2
+          const cpx = x - sliceWidth / 2
+          ctx.quadraticCurveTo(cpx, prevY, x, y)
+        }
         x += sliceWidth
       }
 
-      ctx.lineTo(w, h / 2)
       ctx.stroke()
     }
 
@@ -180,7 +196,8 @@ function App() {
       const audioCtx = new AudioContext()
       const source = audioCtx.createMediaStreamSource(stream)
       const analyser = audioCtx.createAnalyser()
-      analyser.fftSize = 2048
+      analyser.fftSize = 256
+      analyser.smoothingTimeConstant = 0.85
       source.connect(analyser)
       analyserRef.current = analyser
 
@@ -262,6 +279,21 @@ function App() {
     return `${min}:${sec.toString().padStart(2, '0')}`
   }
 
+  const spawnHeart = useCallback(() => {
+    const id = Date.now() + Math.random()
+    const left = 5 + Math.random() * 90
+    setFloatingHearts(prev => [...prev, { id, left }])
+    setTimeout(() => {
+      setFloatingHearts(prev => prev.filter(h => h.id !== id))
+    }, 2500)
+  }, [])
+
+  const clearMessages = useCallback(() => {
+    setMessages([])
+    localStorage.removeItem('fala_messages')
+    setShowClearModal(false)
+  }, [])
+
   const handleInstall = useCallback(async () => {
     if (!installPrompt) return
     installPrompt.prompt()
@@ -273,6 +305,41 @@ function App() {
 
   return (
     <div className="app">
+      <button className="heart-btn" onClick={spawnHeart}>
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#555" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+        </svg>
+      </button>
+
+      {floatingHearts.map(h => (
+        <div key={h.id} className="floating-heart" style={{ left: `${h.left}%` }}>
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="#dc2626" stroke="none">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+          </svg>
+        </div>
+      ))}
+
+      {messages.length > 0 && (
+        <button className="clear-btn" onClick={() => setShowClearModal(true)}>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      )}
+
+      {showClearModal && (
+        <div className="modal-overlay" onClick={() => setShowClearModal(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <p>Limpar todas as mensagens?</p>
+            <div className="modal-actions">
+              <button className="modal-btn cancel" onClick={() => setShowClearModal(false)}>Cancelar</button>
+              <button className="modal-btn confirm" onClick={clearMessages}>Limpar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {installPrompt && (
         <div className="install-bar">
           <button className="install-btn" onClick={handleInstall}>
