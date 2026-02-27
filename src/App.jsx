@@ -182,7 +182,7 @@ function App() {
           const res = await fetch('/api/transcribe', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ audio: base64, mimeType: blob.type }),
+            body: JSON.stringify({ audio: base64 }),
           })
 
           const data = await res.json()
@@ -364,7 +364,7 @@ function App() {
         </div>
       ))}
 
-      <span className="version-tag">v1.5</span>
+      <span className="version-tag">v1.6</span>
 
       {messages.length > 0 && (
         <button className="clear-btn" onClick={() => setShowClearModal(true)}>
