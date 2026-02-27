@@ -58,16 +58,23 @@ function App() {
   }, [])
 
   useEffect(() => {
-    if (chatEndRef.current) {
-      const behavior = initialScrollRef.current ? 'instant' : 'smooth'
-      chatEndRef.current.scrollIntoView({ behavior })
-      initialScrollRef.current = false
+    const scroll = () => {
+      if (chatEndRef.current) {
+        const behavior = initialScrollRef.current ? 'instant' : 'smooth'
+        chatEndRef.current.scrollIntoView({ behavior })
+        initialScrollRef.current = false
+      }
+    }
+    if (initialScrollRef.current) {
+      setTimeout(scroll, 100)
+    } else {
+      scroll()
     }
     try {
       const trimmed = messages.slice(-50)
       localStorage.setItem('fala_messages', JSON.stringify(trimmed))
     } catch { /* storage full */ }
-  }, [messages])
+  }, [messages, micAllowed])
 
   const requestMic = useCallback(async () => {
     try {
