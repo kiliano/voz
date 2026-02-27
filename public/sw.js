@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fala-lindona-v1.0'
+const CACHE_NAME = 'fala-lindona-v1.1'
 
 const PRECACHE = [
   '/',
