@@ -39,6 +39,7 @@ function apiMiddleware() {
         const encoding = mimeType?.includes('ogg') ? 'OGG_OPUS' : 'WEBM_OPUS'
         const config = {
           encoding,
+          sampleRateHertz: 48000,
           languageCode: 'pt-BR',
           enableAutomaticPunctuation: true,
           model: 'latest_long',

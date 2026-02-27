@@ -20,6 +20,7 @@ export default async function handler(req, res) {
   try {
     const config = {
       encoding,
+      sampleRateHertz: 48000,
       languageCode: 'pt-BR',
       enableAutomaticPunctuation: true,
       model: 'latest_long',

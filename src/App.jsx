@@ -36,10 +36,13 @@ function App() {
     chatEndRef.current = node
     if (node && !initialScrollDone.current) {
       initialScrollDone.current = true
-      requestAnimationFrame(() => {
-        const container = node.parentElement
-        if (container) container.scrollTop = container.scrollHeight
-      })
+      const container = node.parentElement
+      if (container) {
+        container.scrollTop = container.scrollHeight + 9999
+        setTimeout(() => {
+          container.scrollTop = container.scrollHeight + 9999
+        }, 60)
+      }
     }
   }, [])
 
@@ -361,7 +364,7 @@ function App() {
         </div>
       ))}
 
-      <span className="version-tag">v1.3</span>
+      <span className="version-tag">v1.5</span>
 
       {messages.length > 0 && (
         <button className="clear-btn" onClick={() => setShowClearModal(true)}>
