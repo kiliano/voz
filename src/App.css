@@ -6,9 +6,20 @@
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: #0f0f0f;
+  background: #1c1c1c;
   color: #e0e0e0;
   min-height: 100vh;
+  position: relative;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: url('/bg.jpg') center / cover no-repeat;
+  filter: blur(8px);
+  opacity: 0.25;
+  z-index: -1;
 }
 
 .container {
@@ -18,6 +29,7 @@ body {
   justify-content: center;
   min-height: 100vh;
   gap: 24px;
+  padding: 40px 20px;
 }
 
 .enable-btn {
@@ -63,10 +75,40 @@ body {
   animation: pulse 1.5s ease-in-out infinite;
 }
 
+.mic-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .status {
   font-size: 14px;
   color: #888;
   letter-spacing: 0.5px;
+}
+
+.error {
+  color: #ef4444;
+  font-size: 14px;
+}
+
+.transcript {
+  max-width: 600px;
+  width: 100%;
+  margin-top: 16px;
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid #2a2a2a;
+  line-height: 1.7;
+  font-size: 16px;
+}
+
+.transcript p {
+  margin-bottom: 12px;
+}
+
+.transcript p:last-child {
+  margin-bottom: 0;
 }
 
 @keyframes pulse {
