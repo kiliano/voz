@@ -298,6 +298,17 @@ body::before {
 
 /* clear button */
 
+.version-tag {
+  position: absolute;
+  top: 44px;
+  left: 14px;
+  font-size: 10px;
+  color: #444;
+  z-index: 4;
+  pointer-events: none;
+  user-select: none;
+}
+
 .clear-btn {
   position: absolute;
   top: 12px;

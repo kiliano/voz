@@ -28,7 +28,7 @@ function apiMiddleware() {
 
         let body = ''
         for await (const chunk of req) body += chunk
-        const { audio, mimeType, sampleRate } = JSON.parse(body)
+        const { audio, mimeType } = JSON.parse(body)
 
         if (!audio) {
           res.statusCode = 400
@@ -43,7 +43,6 @@ function apiMiddleware() {
           enableAutomaticPunctuation: true,
           model: 'latest_long',
         }
-        if (sampleRate) config.sampleRateHertz = sampleRate
 
         try {
           const response = await fetch(`${GOOGLE_API_URL}?key=${apiKey}`, {

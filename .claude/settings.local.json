@@ -6,7 +6,9 @@
       "Bash(where.exe node)",
       "Bash(node -e \":*)",
       "Bash(npm install --save-dev sharp)",
-      "Bash(npx vite build)"
+      "Bash(npx vite build)",
+      "WebFetch(domain:docs.cloud.google.com)",
+      "WebFetch(domain:github.com)"
     ]
   }
 }

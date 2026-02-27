@@ -10,7 +10,7 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'GOOGLE_API_KEY não configurada' })
   }
 
-  const { audio, mimeType, sampleRate } = req.body
+  const { audio, mimeType } = req.body
   if (!audio) {
     return res.status(400).json({ error: 'Nenhum áudio enviado' })
   }
@@ -24,7 +24,6 @@ export default async function handler(req, res) {
       enableAutomaticPunctuation: true,
       model: 'latest_long',
     }
-    if (sampleRate) config.sampleRateHertz = sampleRate
 
     const response = await fetch(`${GOOGLE_API_URL}?key=${apiKey}`, {
       method: 'POST',
