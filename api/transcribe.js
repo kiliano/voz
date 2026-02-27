@@ -10,10 +10,12 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'GOOGLE_API_KEY não configurada' })
   }
 
-  const { audio } = req.body
+  const { audio, mimeType } = req.body
   if (!audio) {
     return res.status(400).json({ error: 'Nenhum áudio enviado' })
   }
+
+  const encoding = mimeType?.includes('ogg') ? 'OGG_OPUS' : 'WEBM_OPUS'
 
   try {
     const response = await fetch(`${GOOGLE_API_URL}?key=${apiKey}`, {
@@ -21,7 +23,7 @@ export default async function handler(req, res) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         config: {
-          encoding: 'OGG_OPUS',
+          encoding,
           languageCode: 'pt-BR',
           enableAutomaticPunctuation: true,
         },

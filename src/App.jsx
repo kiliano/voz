@@ -24,7 +24,6 @@ function App() {
   const audioChunks = useRef([])
   const timerRef = useRef(null)
   const intervalRef = useRef(null)
-  const streamRef = useRef(null)
   const analyserRef = useRef(null)
   const audioCtxRef = useRef(null)
   const canvasRef = useRef(null)
@@ -166,7 +165,7 @@ function App() {
           const res = await fetch('/api/transcribe', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ audio: base64 }),
+            body: JSON.stringify({ audio: base64, mimeType: blob.type }),
           })
 
           const data = await res.json()
@@ -211,7 +210,6 @@ function App() {
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      streamRef.current = stream
 
       // analyser pra waveform
       if (audioCtxRef.current) audioCtxRef.current.close()
@@ -256,7 +254,7 @@ function App() {
         setElapsed(Date.now() - startTime)
       }, 100)
 
-      // auto-stop em 60s
+      // auto-stop em 55s
       timerRef.current = setTimeout(() => {
         if (mediaRecorder.current?.state === 'recording') {
           mediaRecorder.current.stop()
