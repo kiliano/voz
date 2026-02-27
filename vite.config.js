@@ -42,8 +42,7 @@ function apiMiddleware() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               config: {
-                encoding: 'WEBM_OPUS',
-                sampleRateHertz: 48000,
+                encoding: 'OGG_OPUS',
                 languageCode: 'pt-BR',
                 enableAutomaticPunctuation: true,
               },

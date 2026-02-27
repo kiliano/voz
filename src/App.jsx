@@ -224,7 +224,10 @@ function App() {
       source.connect(analyser)
       analyserRef.current = analyser
 
-      const recorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' })
+      const mimeType = MediaRecorder.isTypeSupported('audio/ogg;codecs=opus')
+        ? 'audio/ogg;codecs=opus'
+        : 'audio/webm;codecs=opus'
+      const recorder = new MediaRecorder(stream, { mimeType })
 
       recorder.ondataavailable = (e) => {
         if (e.data.size > 0) audioChunks.current.push(e.data)
@@ -238,7 +241,7 @@ function App() {
           audioCtxRef.current = null
         }
         if (!cancelledRef.current) {
-          const blob = new Blob(audioChunks.current, { type: 'audio/webm;codecs=opus' })
+          const blob = new Blob(audioChunks.current, { type: recorder.mimeType })
           sendAudio(blob)
         }
       }
