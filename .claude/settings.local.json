@@ -5,7 +5,8 @@
       "mcp__Claude_Preview__preview_start",
       "Bash(where.exe node)",
       "Bash(node -e \":*)",
-      "Bash(npm install --save-dev sharp)"
+      "Bash(npm install --save-dev sharp)",
+      "Bash(npx vite build)"
     ]
   }
 }

@@ -30,8 +30,17 @@ function App() {
   const animFrameRef = useRef(null)
   const chatEndRef = useRef(null)
   const cancelledRef = useRef(false)
-  const initialScrollRef = useRef(true)
-  const scrollIntervalRef = useRef(null)
+  const initialScrollDone = useRef(false)
+
+  const setChatEnd = useCallback((node) => {
+    chatEndRef.current = node
+    if (node && !initialScrollDone.current) {
+      initialScrollDone.current = true
+      requestAnimationFrame(() => {
+        node.scrollIntoView({ behavior: 'instant' })
+      })
+    }
+  }, [])
 
   useEffect(() => {
     const handler = (e) => {
@@ -58,37 +67,9 @@ function App() {
     })
   }, [])
 
-  // scroll inicial: interval que roda até a primeira interação
-  useEffect(() => {
-    if (!initialScrollRef.current) return
-
-    const stopInitialScroll = () => {
-      initialScrollRef.current = false
-      if (scrollIntervalRef.current) {
-        clearInterval(scrollIntervalRef.current)
-        scrollIntervalRef.current = null
-      }
-      window.removeEventListener('click', stopInitialScroll, true)
-      window.removeEventListener('touchstart', stopInitialScroll, true)
-      window.removeEventListener('scroll', stopInitialScroll, true)
-    }
-
-    scrollIntervalRef.current = setInterval(() => {
-      if (chatEndRef.current) {
-        chatEndRef.current.scrollIntoView({ behavior: 'instant' })
-      }
-    }, 80)
-
-    window.addEventListener('click', stopInitialScroll, true)
-    window.addEventListener('touchstart', stopInitialScroll, true)
-    window.addEventListener('scroll', stopInitialScroll, true)
-
-    return () => stopInitialScroll()
-  }, [micAllowed])
-
   // novas mensagens: scroll suave + salvar localStorage
   useEffect(() => {
-    if (!initialScrollRef.current && chatEndRef.current) {
+    if (initialScrollDone.current && chatEndRef.current) {
       chatEndRef.current.scrollIntoView({ behavior: 'smooth' })
     }
     try {
@@ -433,7 +414,7 @@ function App() {
                 </svg>
               </div>
             ))}
-            <div ref={chatEndRef} />
+            <div ref={setChatEnd} />
           </div>
         </div>
       )}
