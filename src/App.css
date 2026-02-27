@@ -93,9 +93,12 @@ body::before {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
   padding: 140px 16px 16px;
   gap: 12px;
+}
+
+.chat-spacer {
+  flex: 1;
 }
 
 .chat-scroll::-webkit-scrollbar {

@@ -388,7 +388,8 @@ function App() {
         <div className="chat-area">
           <div className="chat-fade" />
           <div className="chat-scroll">
-            {messages.map((msg, i) => (
+            <div className="chat-spacer" />
+            {messages.map((msg) => (
               <div
                 key={msg.id}
                 className={`msg-box ${copiedId === msg.id ? 'copied' : ''}`}
